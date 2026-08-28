@@ -1,0 +1,440 @@
+-- ==========================================================
+--  ATEZ HUB - TOUCH CONTROLLER & CHAT SYSTEM (NO I-J-K-L)
+-- ==========================================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local Chat = game:GetService("Chat")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local activeNPC = nil
+local moveConnection = nil
+local activeAnimations = {}
+local currentAnimState = "None"
+
+-- ESKİ GUI TEMİZLİĞİ
+if playerGui:FindFirstChild("AtezTouchSpawnerHub") then
+    playerGui.AtezTouchSpawnerHub:Destroy()
+end
+
+-- 1. PREMIUM ADVANCED GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AtezTouchSpawnerHub"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 310, 0, 480)
+mainFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(0, 255, 170)
+mainStroke.Thickness = 1.5
+mainStroke.Transparency = 0.3
+mainStroke.Parent = mainFrame
+
+-- BAŞLIK BAR (DRAG)
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.Parent = titleBar
+
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, -10, 1, 0)
+titleText.Position = UDim2.new(0, 12, 0, 0)
+titleText.Text = "ATEZ HUB // TOUCH CONTROL & CHAT"
+titleText.TextColor3 = Color3.fromRGB(0, 255, 170)
+titleText.TextSize = 11
+titleText.Font = Enum.Font.GothamBold
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.BackgroundTransparency = 1
+titleText.Parent = titleBar
+
+-- PROFIL RESMI
+local avatarFrame = Instance.new("Frame")
+avatarFrame.Size = UDim2.new(0, 50, 0, 50)
+avatarFrame.Position = UDim2.new(0.5, -25, 0.10, 0)
+avatarFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+avatarFrame.Parent = mainFrame
+
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(1, 0)
+avatarCorner.Parent = avatarFrame
+
+local avatarStroke = Instance.new("UIStroke")
+avatarStroke.Color = Color3.fromRGB(0, 255, 170)
+avatarStroke.Thickness = 1.5
+avatarStroke.Parent = avatarFrame
+
+local avatarImage = Instance.new("ImageLabel")
+avatarImage.Size = UDim2.new(1, 0, 1, 0)
+avatarImage.BackgroundTransparency = 1
+avatarImage.Image = "rbxassetid://0"
+avatarImage.Parent = avatarFrame
+
+local imgCorner = Instance.new("UICorner")
+imgCorner.CornerRadius = UDim.new(1, 0)
+imgCorner.Parent = avatarImage
+
+-- INPUT (KULLANICI ADI)
+local nameInput = Instance.new("TextBox")
+nameInput.Size = UDim2.new(0.88, 0, 0, 32)
+nameInput.Position = UDim2.new(0.06, 0, 0.22, 0)
+nameInput.PlaceholderText = "Oyuncu Adı Girin..."
+nameInput.Text = ""
+nameInput.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+nameInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+nameInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 135)
+nameInput.Font = Enum.Font.GothamMedium
+nameInput.TextSize = 11
+nameInput.Parent = mainFrame
+
+local inCorner = Instance.new("UICorner")
+inCorner.CornerRadius = UDim.new(0, 6)
+inCorner.Parent = nameInput
+
+-- SPAWN & SIL BUTONLARI
+local spawnBtn = Instance.new("TextButton")
+spawnBtn.Size = UDim2.new(0.42, 0, 0, 32)
+spawnBtn.Position = UDim2.new(0.06, 0, 0.30, 0)
+spawnBtn.Text = "SPAWN ET"
+spawnBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
+spawnBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+spawnBtn.Font = Enum.Font.GothamBold
+spawnBtn.TextSize = 11
+spawnBtn.Parent = mainFrame
+
+local btn1C = Instance.new("UICorner")
+btn1C.CornerRadius = UDim.new(0, 6)
+btn1C.Parent = spawnBtn
+
+local removeBtn = Instance.new("TextButton")
+removeBtn.Size = UDim2.new(0.42, 0, 0, 32)
+removeBtn.Position = UDim2.new(0.52, 0, 0.30, 0)
+removeBtn.Text = "SIL"
+removeBtn.BackgroundColor3 = Color3.fromRGB(200, 45, 45)
+removeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+removeBtn.Font = Enum.Font.GothamBold
+removeBtn.TextSize = 11
+removeBtn.Parent = mainFrame
+
+local btn2C = Instance.new("UICorner")
+btn2C.CornerRadius = UDim.new(0, 6)
+btn2C.Parent = removeBtn
+
+-- CHAT / SOHBET BÖLÜMÜ
+local chatInput = Instance.new("TextBox")
+chatInput.Size = UDim2.new(0.88, 0, 0, 32)
+chatInput.Position = UDim2.new(0.06, 0, 0.39, 0)
+chatInput.PlaceholderText = "Söyleyeceği Mesajı Yazın..."
+chatInput.Text = ""
+chatInput.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+chatInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+chatInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 135)
+chatInput.Font = Enum.Font.GothamMedium
+chatInput.TextSize = 11
+chatInput.Parent = mainFrame
+
+local chatInCorner = Instance.new("UICorner")
+chatInCorner.CornerRadius = UDim.new(0, 6)
+chatInCorner.Parent = chatInput
+
+local talkBtn = Instance.new("TextButton")
+talkBtn.Size = UDim2.new(0.88, 0, 0, 32)
+talkBtn.Position = UDim2.new(0.06, 0, 0.47, 0)
+talkBtn.Text = "💬 NPC'YI KONUŞTUR"
+talkBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
+talkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+talkBtn.Font = Enum.Font.GothamBold
+talkBtn.TextSize = 11
+talkBtn.Parent = mainFrame
+
+local talkC = Instance.new("UICorner")
+talkC.CornerRadius = UDim.new(0, 6)
+talkC.Parent = talkBtn
+
+-- KUMANDA FRAME
+local controlFrame = Instance.new("Frame")
+controlFrame.Size = UDim2.new(0.88, 0, 0, 180)
+controlFrame.Position = UDim2.new(0.06, 0, 0.56, 0)
+controlFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+controlFrame.Parent = mainFrame
+
+local ctrlC = Instance.new("UICorner")
+ctrlC.CornerRadius = UDim.new(0, 8)
+ctrlC.Parent = controlFrame
+
+local ctrlTitle = Instance.new("TextLabel")
+ctrlTitle.Size = UDim2.new(1, 0, 0, 20)
+ctrlTitle.Text = "SADECE EKRAN DOKUNMATİK KUMANDASI"
+ctrlTitle.TextColor3 = Color3.fromRGB(0, 255, 170)
+ctrlTitle.TextSize = 9
+ctrlTitle.Font = Enum.Font.GothamBold
+ctrlTitle.BackgroundTransparency = 1
+ctrlTitle.Parent = controlFrame
+
+-- DOKUNMATİK BUTONLAR
+local function createPadButton(text, pos, size)
+    local btn = Instance.new("TextButton")
+    btn.Size = size or UDim2.new(0, 42, 0, 42)
+    btn.Position = pos
+    btn.Text = text
+    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    btn.Parent = controlFrame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    return btn
+end
+
+local btnUp = createPadButton("▲", UDim2.new(0.5, -21, 0.15, 0))
+local btnDown = createPadButton("▼", UDim2.new(0.5, -21, 0.62, 0))
+local btnLeft = createPadButton("◄", UDim2.new(0.5, -68, 0.62, 0))
+local btnRight = createPadButton("►", UDim2.new(0.5, 26, 0.62, 0))
+local btnJump = createPadButton("ZIPLA", UDim2.new(0.5, -45, 0.38, 0), UDim2.new(0, 90, 0, 36))
+
+-- 2. DRAG & AVATAR UPDATE
+local dragging, dragInput, dragStart, startPos
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+nameInput:GetPropertyChangedSignal("Text"):Connect(function()
+    local text = nameInput.Text
+    if #text >= 3 then
+        task.spawn(function()
+            local success, userId = pcall(function() return Players:GetUserIdFromNameAsync(text) end)
+            if success and userId then
+                avatarImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=150&height=150&format=png"
+            end
+        end)
+    end
+end)
+
+-- 3. ANIMASYON MOTORU
+local function applyPerfectAnimations(npc)
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+    activeAnimations = {}
+
+    local idleAnim = Instance.new("Animation")
+    local walkAnim = Instance.new("Animation")
+
+    if humanoid.RigType == Enum.HumanoidRigType.R15 then
+        idleAnim.AnimationId = "rbxassetid://507766388"
+        walkAnim.AnimationId = "rbxassetid://913402848"
+    else
+        idleAnim.AnimationId = "rbxassetid://180435571"
+        walkAnim.AnimationId = "rbxassetid://180436334"
+    end
+
+    local trackIdle = animator:LoadAnimation(idleAnim)
+    local trackWalk = animator:LoadAnimation(walkAnim)
+
+    trackIdle.Priority = Enum.AnimationPriority.Core
+    trackWalk.Priority = Enum.AnimationPriority.Movement
+
+    activeAnimations.idle = trackIdle
+    activeAnimations.walk = trackWalk
+
+    trackIdle:Play(0.1)
+    currentAnimState = "Idle"
+end
+
+local function setAnimState(state)
+    if currentAnimState == state then return end
+
+    if state == "Walk" then
+        if activeAnimations.idle then activeAnimations.idle:Stop(0.15) end
+        if activeAnimations.walk then activeAnimations.walk:Play(0.15) end
+    elseif state == "Idle" then
+        if activeAnimations.walk then activeAnimations.walk:Stop(0.15) end
+        if activeAnimations.idle then activeAnimations.idle:Play(0.15) end
+    end
+
+    currentAnimState = state
+end
+
+-- 4. SADECE EKRAN DOKUNMATİK HAREKETİ (KLAVYE İPTAL)
+local padHeld = {Up = false, Down = false, Left = false, Right = false}
+
+btnUp.MouseButton1Down:Connect(function() padHeld.Up = true end)
+btnUp.MouseButton1Up:Connect(function() padHeld.Up = false end)
+
+btnDown.MouseButton1Down:Connect(function() padHeld.Down = true end)
+btnDown.MouseButton1Up:Connect(function() padHeld.Down = false end)
+
+btnLeft.MouseButton1Down:Connect(function() padHeld.Left = true end)
+btnLeft.MouseButton1Up:Connect(function() padHeld.Left = false end)
+
+btnRight.MouseButton1Down:Connect(function() padHeld.Right = true end)
+btnRight.MouseButton1Up:Connect(function() padHeld.Right = false end)
+
+btnJump.MouseButton1Click:Connect(function()
+    if activeNPC then
+        local humanoid = activeNPC:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid.Jump = true end
+    end
+end)
+
+local function startControl(npc)
+    if moveConnection then moveConnection:Disconnect() end
+
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    applyPerfectAnimations(npc)
+
+    moveConnection = RunService.RenderStepped:Connect(function()
+        if not npc or not npc.Parent then
+            if moveConnection then moveConnection:Disconnect() end
+            return
+        end
+
+        local moveVector = Vector3.zero
+        local cameraCFrame = Workspace.CurrentCamera.CFrame
+
+        -- SADECE BUTONLARLA HAREKET
+        if padHeld.Up then moveVector = moveVector + cameraCFrame.LookVector end
+        if padHeld.Down then moveVector = moveVector - cameraCFrame.LookVector end
+        if padHeld.Left then moveVector = moveVector - cameraCFrame.RightVector end
+        if padHeld.Right then moveVector = moveVector + cameraCFrame.RightVector end
+
+        moveVector = Vector3.new(moveVector.X, 0, moveVector.Z)
+
+        if moveVector.Magnitude > 0 then
+            humanoid:Move(moveVector.Unit, false)
+            setAnimState("Walk")
+        else
+            humanoid:Move(Vector3.zero, false)
+            setAnimState("Idle")
+        end
+    end)
+end
+
+-- 5. CHAT BALONU
+talkBtn.MouseButton1Click:Connect(function()
+    local text = chatInput.Text
+    if text == "" or not activeNPC then return end
+
+    local head = activeNPC:FindFirstChild("Head")
+    if head then
+        pcall(function()
+            Chat:Chat(head, text, Enum.ChatColor.White)
+        end)
+    end
+end)
+
+-- 6. SPAWN LOGIC
+spawnBtn.MouseButton1Click:Connect(function()
+    local targetName = nameInput.Text
+    if targetName == "" then return end
+
+    spawnBtn.Text = "YÜKLENİYOR..."
+
+    task.spawn(function()
+        local success, userId = pcall(function()
+            return Players:GetUserIdFromNameAsync(targetName)
+        end)
+
+        if success and userId then
+            local charModel
+            local getSuccess = pcall(function()
+                charModel = Players:CreateHumanoidModelFromUserId(userId)
+            end)
+
+            if getSuccess and charModel then
+                if activeNPC then activeNPC:Destroy() end
+                activeNPC = charModel
+                activeNPC.Name = targetName
+
+                for _, part in ipairs(activeNPC:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+                
+                local hrp = activeNPC:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.CanCollide = true end
+
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local spawnCFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -6)
+                    activeNPC:PivotTo(spawnCFrame)
+                else
+                    activeNPC:PivotTo(CFrame.new(0, 5, 0))
+                end
+
+                activeNPC.Parent = Workspace
+                
+                task.wait(0.1)
+                startControl(activeNPC)
+
+                spawnBtn.Text = "SPAWN ET"
+            else
+                spawnBtn.Text = "HATA!"
+                task.wait(1.5)
+                spawnBtn.Text = "SPAWN ET"
+            end
+        else
+            spawnBtn.Text = "BULUNAMADI!"
+            task.wait(1.5)
+            spawnBtn.Text = "SPAWN ET"
+        end
+    end)
+end)
+
+removeBtn.MouseButton1Click:Connect(function()
+    if activeNPC then
+        activeNPC:Destroy()
+        activeNPC = nil
+    end
+    if moveConnection then
+        moveConnection:Disconnect()
+    end
+end)
