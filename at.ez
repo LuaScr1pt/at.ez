@@ -1,5 +1,5 @@
 -- ==========================================================
---  ATEZ HUB - TOUCH CONTROLLER & CHAT SYSTEM (NO I-J-K-L)
+--  ATEZ HUB - FORCE R15 SPAWNER & INSERT CLIPBOARD COPY
 -- ==========================================================
 
 local Players = game:GetService("Players")
@@ -7,7 +7,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Chat = game:GetService("Chat")
-local TweenService = game:GetService("TweenService")
+local TextChatService = game:GetService("TextChatService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -17,12 +17,20 @@ local moveConnection = nil
 local activeAnimations = {}
 local currentAnimState = "None"
 
--- ESKİ GUI TEMİZLİĞİ
+local targetList = {
+    "mattihsus", "Ksovreli28", "gennybello24118", "criceto_455", "Kaart68951",
+    "Api_5007", "zdenda316", "realkittycatautumn", "findapromise", "raquie_24",
+    "Vendingmachineboi123", "macorita1", "donovan67729", "ayden_jackson2019", "Ajreidmommy",
+    "AhmadGotHackedBroo", "feunards10", "Elfomgirl8", "Loulow52", "othman20022003",
+    "Dgvhhnb98", "Nick_Tam0607", "18k_Ada", "01Deniz_x", "keessssssssssss",
+    "ogiCho0", "lexon734", "katerina_006700", "QuackAbuse"
+}
+
 if playerGui:FindFirstChild("AtezTouchSpawnerHub") then
     playerGui.AtezTouchSpawnerHub:Destroy()
 end
 
--- 1. PREMIUM ADVANCED GUI
+-- 1. NEON COMPACT UI DESIGN
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AtezTouchSpawnerHub"
 screenGui.ResetOnSpawn = false
@@ -30,9 +38,9 @@ screenGui.Parent = playerGui
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 310, 0, 480)
+mainFrame.Size = UDim2.new(0, 240, 0, 390)
 mainFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+mainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
@@ -40,16 +48,23 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainFrame
 
+local mainGradient = Instance.new("UIGradient")
+mainGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 22, 32)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 9, 14))
+})
+mainGradient.Rotation = 45
+mainGradient.Parent = mainFrame
+
 local mainStroke = Instance.new("UIStroke")
 mainStroke.Color = Color3.fromRGB(0, 255, 170)
 mainStroke.Thickness = 1.5
-mainStroke.Transparency = 0.3
+mainStroke.Transparency = 0.25
 mainStroke.Parent = mainFrame
 
--- BAŞLIK BAR (DRAG)
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
+titleBar.Size = UDim2.new(1, 0, 0, 32)
+titleBar.BackgroundColor3 = Color3.fromRGB(16, 18, 26)
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
@@ -59,29 +74,28 @@ titleCorner.Parent = titleBar
 
 local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(1, -10, 1, 0)
-titleText.Position = UDim2.new(0, 12, 0, 0)
-titleText.Text = "ATEZ HUB // TOUCH CONTROL & CHAT"
+titleText.Position = UDim2.new(0, 10, 0, 0)
+titleText.Text = "⚡ ATEZ HUB // FORCE R15 SPAWN"
 titleText.TextColor3 = Color3.fromRGB(0, 255, 170)
-titleText.TextSize = 11
+titleText.TextSize = 10
 titleText.Font = Enum.Font.GothamBold
 titleText.TextXAlignment = Enum.TextXAlignment.Left
 titleText.BackgroundTransparency = 1
 titleText.Parent = titleBar
 
--- PROFIL RESMI
 local avatarFrame = Instance.new("Frame")
-avatarFrame.Size = UDim2.new(0, 50, 0, 50)
-avatarFrame.Position = UDim2.new(0.5, -25, 0.10, 0)
-avatarFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+avatarFrame.Size = UDim2.new(0, 40, 0, 40)
+avatarFrame.Position = UDim2.new(0.06, 0, 0.10, 0)
+avatarFrame.BackgroundColor3 = Color3.fromRGB(22, 24, 35)
 avatarFrame.Parent = mainFrame
 
 local avatarCorner = Instance.new("UICorner")
-avatarCorner.CornerRadius = UDim.new(1, 0)
+avatarCorner.CornerRadius = UDim.new(0, 8)
 avatarCorner.Parent = avatarFrame
 
 local avatarStroke = Instance.new("UIStroke")
 avatarStroke.Color = Color3.fromRGB(0, 255, 170)
-avatarStroke.Thickness = 1.5
+avatarStroke.Thickness = 1
 avatarStroke.Parent = avatarFrame
 
 local avatarImage = Instance.new("ImageLabel")
@@ -91,35 +105,45 @@ avatarImage.Image = "rbxassetid://0"
 avatarImage.Parent = avatarFrame
 
 local imgCorner = Instance.new("UICorner")
-imgCorner.CornerRadius = UDim.new(1, 0)
+imgCorner.CornerRadius = UDim.new(0, 8)
 imgCorner.Parent = avatarImage
 
--- INPUT (KULLANICI ADI)
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(0.68, 0, 0, 40)
+statusLabel.Position = UDim2.new(0.26, 0, 0.10, 0)
+statusLabel.Text = "[INSERT] bas veya isim yaz..."
+statusLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
+statusLabel.TextSize = 9
+statusLabel.Font = Enum.Font.GothamBold
+statusLabel.TextWrapped = true
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.BackgroundTransparency = 1
+statusLabel.Parent = mainFrame
+
 local nameInput = Instance.new("TextBox")
-nameInput.Size = UDim2.new(0.88, 0, 0, 32)
+nameInput.Size = UDim2.new(0.88, 0, 0, 26)
 nameInput.Position = UDim2.new(0.06, 0, 0.22, 0)
-nameInput.PlaceholderText = "Oyuncu Adı Girin..."
+nameInput.PlaceholderText = "Oyuncu Adı..."
 nameInput.Text = ""
-nameInput.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+nameInput.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
 nameInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-nameInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 135)
+nameInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 120)
 nameInput.Font = Enum.Font.GothamMedium
-nameInput.TextSize = 11
+nameInput.TextSize = 10
 nameInput.Parent = mainFrame
 
 local inCorner = Instance.new("UICorner")
 inCorner.CornerRadius = UDim.new(0, 6)
 inCorner.Parent = nameInput
 
--- SPAWN & SIL BUTONLARI
 local spawnBtn = Instance.new("TextButton")
-spawnBtn.Size = UDim2.new(0.42, 0, 0, 32)
+spawnBtn.Size = UDim2.new(0.42, 0, 0, 26)
 spawnBtn.Position = UDim2.new(0.06, 0, 0.30, 0)
 spawnBtn.Text = "SPAWN ET"
 spawnBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
 spawnBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 spawnBtn.Font = Enum.Font.GothamBold
-spawnBtn.TextSize = 11
+spawnBtn.TextSize = 10
 spawnBtn.Parent = mainFrame
 
 local btn1C = Instance.new("UICorner")
@@ -127,30 +151,29 @@ btn1C.CornerRadius = UDim.new(0, 6)
 btn1C.Parent = spawnBtn
 
 local removeBtn = Instance.new("TextButton")
-removeBtn.Size = UDim2.new(0.42, 0, 0, 32)
+removeBtn.Size = UDim2.new(0.42, 0, 0, 26)
 removeBtn.Position = UDim2.new(0.52, 0, 0.30, 0)
-removeBtn.Text = "SIL"
-removeBtn.BackgroundColor3 = Color3.fromRGB(200, 45, 45)
+removeBtn.Text = "SİL"
+removeBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 55)
 removeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 removeBtn.Font = Enum.Font.GothamBold
-removeBtn.TextSize = 11
+removeBtn.TextSize = 10
 removeBtn.Parent = mainFrame
 
 local btn2C = Instance.new("UICorner")
 btn2C.CornerRadius = UDim.new(0, 6)
 btn2C.Parent = removeBtn
 
--- CHAT / SOHBET BÖLÜMÜ
 local chatInput = Instance.new("TextBox")
-chatInput.Size = UDim2.new(0.88, 0, 0, 32)
-chatInput.Position = UDim2.new(0.06, 0, 0.39, 0)
-chatInput.PlaceholderText = "Söyleyeceği Mesajı Yazın..."
+chatInput.Size = UDim2.new(0.88, 0, 0, 26)
+chatInput.Position = UDim2.new(0.06, 0, 0.38, 0)
+chatInput.PlaceholderText = "Konuşma Mesajı..."
 chatInput.Text = ""
-chatInput.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+chatInput.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
 chatInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-chatInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 135)
+chatInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 120)
 chatInput.Font = Enum.Font.GothamMedium
-chatInput.TextSize = 11
+chatInput.TextSize = 10
 chatInput.Parent = mainFrame
 
 local chatInCorner = Instance.new("UICorner")
@@ -158,49 +181,43 @@ chatInCorner.CornerRadius = UDim.new(0, 6)
 chatInCorner.Parent = chatInput
 
 local talkBtn = Instance.new("TextButton")
-talkBtn.Size = UDim2.new(0.88, 0, 0, 32)
-talkBtn.Position = UDim2.new(0.06, 0, 0.47, 0)
-talkBtn.Text = "💬 NPC'YI KONUŞTUR"
-talkBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
+talkBtn.Size = UDim2.new(0.88, 0, 0, 26)
+talkBtn.Position = UDim2.new(0.06, 0, 0.46, 0)
+talkBtn.Text = "💬 KONUŞTUR"
+talkBtn.BackgroundColor3 = Color3.fromRGB(0, 130, 230)
 talkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 talkBtn.Font = Enum.Font.GothamBold
-talkBtn.TextSize = 11
+talkBtn.TextSize = 10
 talkBtn.Parent = mainFrame
 
 local talkC = Instance.new("UICorner")
 talkC.CornerRadius = UDim.new(0, 6)
 talkC.Parent = talkBtn
 
--- KUMANDA FRAME
 local controlFrame = Instance.new("Frame")
-controlFrame.Size = UDim2.new(0.88, 0, 0, 180)
-controlFrame.Position = UDim2.new(0.06, 0, 0.56, 0)
-controlFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+controlFrame.Size = UDim2.new(0.88, 0, 0, 150)
+controlFrame.Position = UDim2.new(0.06, 0, 0.55, 0)
+controlFrame.BackgroundColor3 = Color3.fromRGB(16, 18, 25)
 controlFrame.Parent = mainFrame
 
 local ctrlC = Instance.new("UICorner")
 ctrlC.CornerRadius = UDim.new(0, 8)
 ctrlC.Parent = controlFrame
 
-local ctrlTitle = Instance.new("TextLabel")
-ctrlTitle.Size = UDim2.new(1, 0, 0, 20)
-ctrlTitle.Text = "SADECE EKRAN DOKUNMATİK KUMANDASI"
-ctrlTitle.TextColor3 = Color3.fromRGB(0, 255, 170)
-ctrlTitle.TextSize = 9
-ctrlTitle.Font = Enum.Font.GothamBold
-ctrlTitle.BackgroundTransparency = 1
-ctrlTitle.Parent = controlFrame
+local ctrlStroke = Instance.new("UIStroke")
+ctrlStroke.Color = Color3.fromRGB(30, 32, 45)
+ctrlStroke.Thickness = 1
+ctrlStroke.Parent = controlFrame
 
--- DOKUNMATİK BUTONLAR
 local function createPadButton(text, pos, size)
     local btn = Instance.new("TextButton")
-    btn.Size = size or UDim2.new(0, 42, 0, 42)
+    btn.Size = size or UDim2.new(0, 36, 0, 36)
     btn.Position = pos
     btn.Text = text
-    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    btn.BackgroundColor3 = Color3.fromRGB(26, 28, 40)
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 13
+    btn.TextSize = 11
     btn.Parent = controlFrame
 
     local corner = Instance.new("UICorner")
@@ -210,13 +227,13 @@ local function createPadButton(text, pos, size)
     return btn
 end
 
-local btnUp = createPadButton("▲", UDim2.new(0.5, -21, 0.15, 0))
-local btnDown = createPadButton("▼", UDim2.new(0.5, -21, 0.62, 0))
-local btnLeft = createPadButton("◄", UDim2.new(0.5, -68, 0.62, 0))
-local btnRight = createPadButton("►", UDim2.new(0.5, 26, 0.62, 0))
-local btnJump = createPadButton("ZIPLA", UDim2.new(0.5, -45, 0.38, 0), UDim2.new(0, 90, 0, 36))
+local btnUp = createPadButton("▲", UDim2.new(0.5, -18, 0.08, 0))
+local btnDown = createPadButton("▼", UDim2.new(0.5, -18, 0.64, 0))
+local btnLeft = createPadButton("◄", UDim2.new(0.5, -58, 0.64, 0))
+local btnRight = createPadButton("►", UDim2.new(0.5, 22, 0.64, 0))
+local btnJump = createPadButton("ZIPLA", UDim2.new(0.5, -36, 0.36, 0), UDim2.new(0, 72, 0, 32))
 
--- 2. DRAG & AVATAR UPDATE
+-- DRAG
 local dragging, dragInput, dragStart, startPos
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -242,20 +259,57 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- CANLI ROBUX KONTROLÜ
 nameInput:GetPropertyChangedSignal("Text"):Connect(function()
     local text = nameInput.Text
-    if #text >= 3 then
-        task.spawn(function()
-            local success, userId = pcall(function() return Players:GetUserIdFromNameAsync(text) end)
+    if #text < 3 then
+        statusLabel.Text = "[INSERT] bas veya isim yaz..."
+        statusLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
+        avatarImage.Image = "rbxassetid://0"
+        return
+    end
+
+    statusLabel.Text = "Kontrol ediliyor..."
+    statusLabel.TextColor3 = Color3.fromRGB(200, 200, 100)
+
+    task.spawn(function()
+        local success, userId = pcall(function()
+            return Players:GetUserIdFromNameAsync(text)
+        end)
+
+        if nameInput.Text == text then
             if success and userId then
                 avatarImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=150&height=150&format=png"
+                
+                local descSuccess, humDesc = pcall(function()
+                    return Players:GetHumanoidDescriptionFromUserId(userId)
+                end)
+
+                if descSuccess and humDesc then
+                    local hasRobuxItems = (humDesc.HatAccessory ~= "" or humDesc.HairAccessory ~= "" or humDesc.FaceAccessory ~= "" or humDesc.NeckAccessory ~= "" or humDesc.ShoulderAccessory ~= "" or humDesc.FrontAccessory ~= "" or humDesc.BackAccessory ~= "" or humDesc.WaistAccessory ~= "" or humDesc.Shirt ~= 0 or humDesc.Pants ~= 0 or humDesc.GraphicTShirt ~= 0 or humDesc.AnimationPack ~= 0)
+                    
+                    if hasRobuxItems then
+                        statusLabel.Text = "✓ AVATARDA ROBUX VAR"
+                        statusLabel.TextColor3 = Color3.fromRGB(0, 255, 120)
+                    else
+                        statusLabel.Text = "✕ AVATARDA ROBUX YOK"
+                        statusLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
+                    end
+                else
+                    statusLabel.Text = "✓ KULLANICI BULUNDU"
+                    statusLabel.TextColor3 = Color3.fromRGB(0, 255, 120)
+                end
+            else
+                statusLabel.Text = "✕ KULLANICI YOK"
+                statusLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
+                avatarImage.Image = "rbxassetid://0"
             end
-        end)
-    end
+        end
+    end)
 end)
 
--- 3. ANIMASYON MOTORU
-local function applyPerfectAnimations(npc)
+-- R15 ANIMASYON MOTORU
+local function applyR15Animations(npc)
     local humanoid = npc:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
 
@@ -264,26 +318,32 @@ local function applyPerfectAnimations(npc)
 
     local idleAnim = Instance.new("Animation")
     local walkAnim = Instance.new("Animation")
+    local jumpAnim = Instance.new("Animation")
 
-    if humanoid.RigType == Enum.HumanoidRigType.R15 then
-        idleAnim.AnimationId = "rbxassetid://507766388"
-        walkAnim.AnimationId = "rbxassetid://913402848"
-    else
-        idleAnim.AnimationId = "rbxassetid://180435571"
-        walkAnim.AnimationId = "rbxassetid://180436334"
-    end
+    idleAnim.AnimationId = "rbxassetid://507766388"
+    walkAnim.AnimationId = "rbxassetid://913402848"
+    jumpAnim.AnimationId = "rbxassetid://507765000"
 
     local trackIdle = animator:LoadAnimation(idleAnim)
     local trackWalk = animator:LoadAnimation(walkAnim)
+    local trackJump = animator:LoadAnimation(jumpAnim)
 
     trackIdle.Priority = Enum.AnimationPriority.Core
     trackWalk.Priority = Enum.AnimationPriority.Movement
+    trackJump.Priority = Enum.AnimationPriority.Action
 
     activeAnimations.idle = trackIdle
     activeAnimations.walk = trackWalk
+    activeAnimations.jump = trackJump
 
     trackIdle:Play(0.1)
     currentAnimState = "Idle"
+
+    humanoid.Jumping:Connect(function(active)
+        if active and activeAnimations.jump then
+            activeAnimations.jump:Play(0.05)
+        end
+    end)
 end
 
 local function setAnimState(state)
@@ -300,7 +360,24 @@ local function setAnimState(state)
     currentAnimState = state
 end
 
--- 4. SADECE EKRAN DOKUNMATİK HAREKETİ (KLAVYE İPTAL)
+-- TEK CHAT MOTORU
+local function makeNPCSpeak(msg)
+    if not activeNPC or msg == "" then return end
+    local head = activeNPC:FindFirstChild("Head")
+    if not head then return end
+
+    if TextChatService and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        pcall(function() TextChatService:DisplayBubble(head, msg) end)
+    else
+        pcall(function() Chat:Chat(head, msg, Enum.ChatColor.White) end)
+    end
+end
+
+talkBtn.MouseButton1Click:Connect(function()
+    makeNPCSpeak(chatInput.Text)
+end)
+
+-- DOKUNMATİK KONTROL
 local padHeld = {Up = false, Down = false, Left = false, Right = false}
 
 btnUp.MouseButton1Down:Connect(function() padHeld.Up = true end)
@@ -328,7 +405,7 @@ local function startControl(npc)
     local humanoid = npc:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
 
-    applyPerfectAnimations(npc)
+    applyR15Animations(npc)
 
     moveConnection = RunService.RenderStepped:Connect(function()
         if not npc or not npc.Parent then
@@ -339,7 +416,6 @@ local function startControl(npc)
         local moveVector = Vector3.zero
         local cameraCFrame = Workspace.CurrentCamera.CFrame
 
-        -- SADECE BUTONLARLA HAREKET
         if padHeld.Up then moveVector = moveVector + cameraCFrame.LookVector end
         if padHeld.Down then moveVector = moveVector - cameraCFrame.LookVector end
         if padHeld.Left then moveVector = moveVector - cameraCFrame.RightVector end
@@ -357,76 +433,70 @@ local function startControl(npc)
     end)
 end
 
--- 5. CHAT BALONU
-talkBtn.MouseButton1Click:Connect(function()
-    local text = chatInput.Text
-    if text == "" or not activeNPC then return end
-
-    local head = activeNPC:FindFirstChild("Head")
-    if head then
-        pcall(function()
-            Chat:Chat(head, text, Enum.ChatColor.White)
-        end)
-    end
-end)
-
--- 6. SPAWN LOGIC
-spawnBtn.MouseButton1Click:Connect(function()
-    local targetName = nameInput.Text
+-- ZORUNLU R15 SPAWN MOTORU
+local function spawnCharacterByName(targetName)
     if targetName == "" then return end
 
     spawnBtn.Text = "YÜKLENİYOR..."
 
     task.spawn(function()
-        local success, userId = pcall(function()
-            return Players:GetUserIdFromNameAsync(targetName)
+        local charModel = nil
+
+        pcall(function()
+            local userId = Players:GetUserIdFromNameAsync(targetName)
+            if userId then
+                local humDesc = Players:GetHumanoidDescriptionFromUserId(userId)
+                if humDesc then
+                    -- R6 dahi olsa R15 yapısında zorunlu oluşturur
+                    charModel = Players:CreateHumanoidModelFromDescription(humDesc, Enum.HumanoidRigType.R15)
+                end
+            end
         end)
 
-        if success and userId then
-            local charModel
-            local getSuccess = pcall(function()
-                charModel = Players:CreateHumanoidModelFromUserId(userId)
+        -- Yedek Kontrol
+        if not charModel then
+            pcall(function()
+                local userId = Players:GetUserIdFromNameAsync(targetName)
+                if userId then
+                    charModel = Players:CreateHumanoidModelFromUserId(userId)
+                end
             end)
-
-            if getSuccess and charModel then
-                if activeNPC then activeNPC:Destroy() end
-                activeNPC = charModel
-                activeNPC.Name = targetName
-
-                for _, part in ipairs(activeNPC:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-                
-                local hrp = activeNPC:FindFirstChild("HumanoidRootPart")
-                if hrp then hrp.CanCollide = true end
-
-                local char = player.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    local spawnCFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -6)
-                    activeNPC:PivotTo(spawnCFrame)
-                else
-                    activeNPC:PivotTo(CFrame.new(0, 5, 0))
-                end
-
-                activeNPC.Parent = Workspace
-                
-                task.wait(0.1)
-                startControl(activeNPC)
-
-                spawnBtn.Text = "SPAWN ET"
-            else
-                spawnBtn.Text = "HATA!"
-                task.wait(1.5)
-                spawnBtn.Text = "SPAWN ET"
-            end
-        else
-            spawnBtn.Text = "BULUNAMADI!"
-            task.wait(1.5)
-            spawnBtn.Text = "SPAWN ET"
         end
+
+        if activeNPC then activeNPC:Destroy() end
+        
+        if charModel then
+            activeNPC = charModel
+            activeNPC.Name = targetName
+
+            for _, part in ipairs(activeNPC:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+
+            local hrp = activeNPC:FindFirstChild("HumanoidRootPart") or activeNPC:FindFirstChild("Torso") or activeNPC:FindFirstChild("UpperTorso")
+            if hrp then hrp.CanCollide = true end
+
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                activeNPC:PivotTo(char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -6))
+            else
+                activeNPC:PivotTo(CFrame.new(0, 5, 0))
+            end
+
+            activeNPC.Parent = Workspace
+
+            task.wait(0.1)
+            startControl(activeNPC)
+        end
+
+        spawnBtn.Text = "SPAWN ET"
     end)
+end
+
+spawnBtn.MouseButton1Click:Connect(function()
+    spawnCharacterByName(nameInput.Text)
 end)
 
 removeBtn.MouseButton1Click:Connect(function()
@@ -434,7 +504,21 @@ removeBtn.MouseButton1Click:Connect(function()
         activeNPC:Destroy()
         activeNPC = nil
     end
-    if moveConnection then
-        moveConnection:Disconnect()
+    if moveConnection then moveConnection:Disconnect() end
+end)
+
+-- [INSERT] KISAYOLU
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.KeyCode == Enum.KeyCode.Insert then
+        local chosenName = targetList[math.random(1, #targetList)]
+        
+        pcall(function()
+            setclipboard(chosenName)
+        end)
+
+        nameInput.Text = chosenName
+        spawnCharacterByName(chosenName)
     end
 end)
